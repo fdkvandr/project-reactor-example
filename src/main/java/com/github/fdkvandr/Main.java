@@ -1,4 +1,4 @@
-package com.github.fdkvand;
+package com.github.fdkvandr;
 
 public class Main {
 
