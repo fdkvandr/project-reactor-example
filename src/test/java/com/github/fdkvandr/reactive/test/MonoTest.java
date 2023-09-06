@@ -101,4 +101,44 @@ public class MonoTest {
                 Throwable::printStackTrace,
                 () -> log.info("FINISHED!"));
     }
+
+    @Test
+    public void monoDoOnError() {
+        Mono<Object> error = Mono.error(new IllegalArgumentException("Illegal argument"))
+                .doOnError(e -> log.info("Error message: {}", e.getMessage()))
+                .log();
+
+        StepVerifier.create(error)
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
+    public void monoOnErrorResume() {
+        String name = "Andrey Fedyakov";
+
+        Mono<Object> error = Mono.error(new IllegalArgumentException("Illegal argument"))
+                .onErrorResume(e -> {
+                    log.info("Inside On Error Resume");
+                    return Mono.just(name);
+                })
+                .doOnError(e -> log.info("Error message: {}", e.getMessage()))
+                .log();
+
+        StepVerifier.create(error)
+                .expectNext(name)
+                .verifyComplete();
+    }
+
+    @Test
+    public void monoOnErrorReturn() {
+        Mono<Object> error = Mono.error(new IllegalArgumentException("Illegal argument"))
+                .onErrorReturn("EMPTY")
+                .doOnError(e -> log.info("Error message: {}", e.getMessage()))
+                .log();
+
+        StepVerifier.create(error)
+                .expectNext("EMPTY")
+                .verifyComplete();
+    }
 }
