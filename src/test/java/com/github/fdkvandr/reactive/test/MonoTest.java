@@ -19,4 +19,32 @@ public class MonoTest {
                 .expectNext(name)
                 .verifyComplete();
     }
+
+    @Test
+    public void monoSubscriberConsumer() {
+        String name = "Andrey Fedyakov";
+        Mono<String> mono = Mono.just(name)
+                .log();
+        mono.subscribe(string -> log.info("Value: {}", string ));
+        log.info("------------------------------");
+        StepVerifier.create(mono)
+                .expectNext(name)
+                .verifyComplete();
+    }
+
+    @Test
+    public void monoSubscriberConsumerError() {
+        String name = "Andrey Fedyakov";
+        Mono<String> mono = Mono.just(name)
+                .map(it -> {throw new RuntimeException("Testing Mono with Error");});
+        mono.subscribe(
+                string -> log.info("Value: {}", string ),
+                error -> log.error("Error: {}", error.getMessage()));
+        mono.subscribe(
+                string -> log.info("Value: {}", string ),
+                Throwable::printStackTrace);
+        StepVerifier.create(mono)
+                .expectError(RuntimeException.class)
+                .verify();
+    }
 }
