@@ -38,4 +38,68 @@ public class OperatorsTest {
         flux.subscribe();
         flux.subscribe();
     }
+
+    @Test
+    public void multipleSubscribeOnSimple() {
+        Flux<Integer> flux = Flux.range(1, 4 )
+                .subscribeOn(Schedulers.single())
+                .map(it -> {
+                    log.info("Map 1 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                }).subscribeOn(Schedulers.boundedElastic())
+                .map(it -> {
+                    log.info("Map 2 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                });
+
+        flux.subscribe();
+    }
+
+    @Test
+    public void multiplePublishOnSimple() {
+        Flux<Integer> flux = Flux.range(1, 4 )
+                .publishOn(Schedulers.single())
+                .map(it -> {
+                    log.info("Map 1 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                }).publishOn(Schedulers.boundedElastic())
+                .map(it -> {
+                    log.info("Map 2 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                });
+
+        flux.subscribe();
+    }
+
+    @Test
+    public void publishOnAndSubscribeOnSimple() {
+        Flux<Integer> flux = Flux.range(1, 4 )
+                .publishOn(Schedulers.single())
+                .map(it -> {
+                    log.info("Map 1 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                }).subscribeOn(Schedulers.boundedElastic())
+                .map(it -> {
+                    log.info("Map 2 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                });
+
+        flux.subscribe();
+    }
+
+    @Test
+    public void subscribeOnAndPublishOnSimple() {
+        Flux<Integer> flux = Flux.range(1, 4 )
+                .subscribeOn(Schedulers.single())
+                .map(it -> {
+                    log.info("Map 1 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                }).publishOn(Schedulers.boundedElastic())
+                .map(it -> {
+                    log.info("Map 2 - Number: {} on Thread {}", it, Thread.currentThread().getName());
+                    return it;
+                });
+
+        flux.subscribe();
+    }
 }
