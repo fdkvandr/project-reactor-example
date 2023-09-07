@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.BaseSubscriber;
+import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -170,5 +171,34 @@ public class FluxTest {
         StepVerifier.create(flux)
                 .expectNext(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                 .verifyComplete();
+    }
+
+    @Test
+    public void connectableFlux() throws InterruptedException {
+        ConnectableFlux<Integer> connectableFlux = Flux.range(1, 10)
+                .delayElements(Duration.ofMillis(100))
+                .log()
+                .limitRate(1)
+                .publish();
+
+        connectableFlux.connect();
+
+        log.info("Thread sleeping for 300ms");
+        Thread.sleep(300L);
+        connectableFlux.subscribe(it -> log.info("Subscriber1 number: {}", it));
+        log.info("Thread sleeping for 200ms");
+        Thread.sleep(200L);
+        connectableFlux.subscribe(it -> log.info("Subscriber2 number: {}", it));
+
+        Thread.sleep(3000L);
+
+        log.info("------------------------------");
+        StepVerifier
+                .create(connectableFlux)
+                .then(connectableFlux::connect)
+                .thenConsumeWhile(it -> it <= 5)
+                .expectNext(6, 7, 8, 9, 10)
+                .expectComplete()
+                .verify();
     }
 }
