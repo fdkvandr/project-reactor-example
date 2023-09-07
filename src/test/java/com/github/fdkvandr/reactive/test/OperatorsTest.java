@@ -122,4 +122,28 @@ public class OperatorsTest {
             return true;
         }).verifyComplete();
     }
+
+    @Test
+    public void switchIfEmptyOperator() {
+        Flux<Object> flux = emptyFlux().switchIfEmpty(Flux.just(1, 2, 3))
+                .log();
+        flux.subscribe();
+    }
+
+    private Flux<Object> emptyFlux() {
+        return Flux.empty();
+    }
+
+    @Test
+    public void deferOperator() throws InterruptedException {
+        Mono<Long> mono = Mono.defer(() -> Mono.just(System.currentTimeMillis()));
+
+        mono.subscribe(it -> log.info("time: {}", it));
+        Thread.sleep(100L);
+        mono.subscribe(it -> log.info("time: {}", it));
+        Thread.sleep(100L);
+        mono.subscribe(it -> log.info("time: {}", it));
+        Thread.sleep(100L);
+        mono.subscribe(it -> log.info("time: {}", it));
+    }
 }
