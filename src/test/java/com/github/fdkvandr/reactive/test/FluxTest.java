@@ -201,4 +201,32 @@ public class FluxTest {
                 .expectComplete()
                 .verify();
     }
+
+    @Test
+    public void connectableFluxAutoConnect() throws InterruptedException {
+        Flux<Integer> flux = Flux.range(1, 5)
+                .delayElements(Duration.ofMillis(100))
+                .log()
+                .limitRate(1)
+                .publish()
+                .autoConnect(2);
+
+
+        log.info("Thread sleeping for 300ms");
+        Thread.sleep(300L);
+        flux.subscribe(it -> log.info("Subscriber1 number: {}", it));
+        log.info("Thread sleeping for 200ms");
+        Thread.sleep(200L);
+        flux.subscribe(it -> log.info("Subscriber2 number: {}", it));
+
+        Thread.sleep(3000L);
+
+        // log.info("------------------------------");
+        // StepVerifier
+        //         .create(flux)
+        //         .then(flux::subscribe)
+        //         .expectNext(1, 2, 3, 4, 5)
+        //         .expectComplete()
+        //         .verify();
+    }
 }
