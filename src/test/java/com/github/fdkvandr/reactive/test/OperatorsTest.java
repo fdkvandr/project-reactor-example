@@ -173,15 +173,41 @@ public class OperatorsTest {
     @Test
     public void combineLatestOperator() throws InterruptedException {
         Flux<String> flux1 = Flux.just("a1", "a2", "a3", "a4" )
-                .delayElements(Duration.ofMillis(1000))
-                .limitRate(1);
+                .delayElements(Duration.ofMillis(1000));
         Flux<String> flux2 = Flux.just("b1", "b2", "b3", "b4")
-                .delayElements(Duration.ofMillis(500))
-                .limitRate(1);
+                .delayElements(Duration.ofMillis(500));
 
         Flux<String> combineLatestFlux = Flux.combineLatest(flux1, flux2, (el1, el2) -> el1 + el2).log();
 
         combineLatestFlux.subscribe(it -> log.info("Value: {}", it));
+
+        Thread.sleep(5000L);
+    }
+
+    @Test
+    public void mergeOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a1", "a2", "a3", "a4" )
+                .delayElements(Duration.ofMillis(1000));
+        Flux<String> flux2 = Flux.just("b1", "b2", "b3", "b4")
+                .delayElements(Duration.ofMillis(500));
+
+        Flux<String> mergeFlux = Flux.merge(flux1, flux2).log();
+
+        mergeFlux.subscribe(it -> log.info("Value: {}", it));
+
+        Thread.sleep(5000L);
+    }
+
+    @Test
+    public void mergeWithOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a1", "a2", "a3", "a4" )
+                .delayElements(Duration.ofMillis(1000));
+        Flux<String> flux2 = Flux.just("b1", "b2", "b3", "b4")
+                .delayElements(Duration.ofMillis(500));
+
+        Flux<String> mergeFlux = flux1.mergeWith(flux2).log();
+
+        mergeFlux.subscribe(it -> log.info("Value: {}", it));
 
         Thread.sleep(5000L);
     }
