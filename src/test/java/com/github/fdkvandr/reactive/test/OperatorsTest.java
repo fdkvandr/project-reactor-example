@@ -211,4 +211,68 @@ public class OperatorsTest {
 
         Thread.sleep(5000L);
     }
+
+    @Test
+    public void mergeSequentialOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a1", "a2", "a3", "a4" )
+                .delayElements(Duration.ofMillis(1000));
+        Flux<String> flux2 = Flux.just("b1", "b2", "b3", "b4")
+                .delayElements(Duration.ofMillis(500));
+
+        Flux<String> mergeFlux = Flux.concat(flux1, flux2, flux1).log();
+
+        mergeFlux.subscribe(it -> log.info("Value: {}", it));
+
+        Thread.sleep(11000L);
+    }
+
+    @Test
+    public void concatDelayErrorOperator() {
+        Flux<String> flux1 = Flux.just("a", "b", "e")
+                .map(it -> {
+                    if (it.equals("b")) {
+                        throw new IllegalArgumentException("error flux1");
+                    }
+                    return it;
+                });
+        Flux<String> flux2 = Flux.just("c", "d", "f")
+                .map(it -> {
+                    if (it.equals("d")) {
+                        throw new IllegalArgumentException("error flux2");
+                    }
+                    return it;
+                });
+
+        Flux<String> concatFlux = Flux.concatDelayError(flux1, flux2)
+                .log();
+
+        concatFlux.subscribe(it -> log.info("Value: {}", it));
+    }
+
+    @Test
+    public void mergeDelayErrorOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a", "b", "e")
+                .delayElements(Duration.ofMillis(1000))
+                .map(it -> {
+                    if (it.equals("b")) {
+                        throw new IllegalArgumentException("error flux1");
+                    }
+                    return it;
+                });
+        Flux<String> flux2 = Flux.just("c", "d", "f")
+                .delayElements(Duration.ofMillis(500))
+                .map(it -> {
+                    if (it.equals("d")) {
+                        throw new IllegalArgumentException("error flux2");
+                    }
+                    return it;
+                });
+
+        Flux<String> concatFlux = Flux.mergeSequentialDelayError(1, flux1, flux2)
+                .log();
+
+        concatFlux.subscribe(it -> log.info("Value: {}", it));
+
+        Thread.sleep(11000L);
+    }
 }
