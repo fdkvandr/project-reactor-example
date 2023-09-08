@@ -10,6 +10,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -145,5 +146,43 @@ public class OperatorsTest {
         mono.subscribe(it -> log.info("time: {}", it));
         Thread.sleep(100L);
         mono.subscribe(it -> log.info("time: {}", it));
+    }
+
+    @Test
+    public void concatOperator() {
+        Flux<String> flux1 = Flux.just("a", "b");
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> concatFlux = Flux.concat(flux1, flux2)
+                .log();
+
+        concatFlux.subscribe(it -> log.info("Value: {}", it));
+    }
+
+    @Test
+    public void concatWithOperator() {
+        Flux<String> flux1 = Flux.just("a", "b");
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> concatWithFlux = flux1.concatWith(flux2)
+                .log();
+
+        concatWithFlux.subscribe(it -> log.info("Value: {}", it));
+    }
+
+    @Test
+    public void combineLatestOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a1", "a2", "a3", "a4" )
+                .delayElements(Duration.ofMillis(1000))
+                .limitRate(1);
+        Flux<String> flux2 = Flux.just("b1", "b2", "b3", "b4")
+                .delayElements(Duration.ofMillis(500))
+                .limitRate(1);
+
+        Flux<String> combineLatestFlux = Flux.combineLatest(flux1, flux2, (el1, el2) -> el1 + el2).log();
+
+        combineLatestFlux.subscribe(it -> log.info("Value: {}", it));
+
+        Thread.sleep(5000L);
     }
 }
