@@ -1,5 +1,9 @@
 package com.github.fdkvandr.reactive.test;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -292,5 +296,38 @@ public class OperatorsTest {
         flatMapFlux.subscribe(log::info);
 
         Thread.sleep(1000L);
+    }
+
+    @AllArgsConstructor
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    static class Book {
+        private String title;
+        private String author;
+        private int head;
+    }
+
+    @Test
+    public void zipOperator() {
+        Flux<String> titles = Flux.just("Clean Code", "Programming on Java", "Learning Java");
+        Flux<String> authors = Flux.just("Dad Bob Martin", "Vasiliev");
+        Flux<Integer> heads = Flux.just(12, 24);
+
+        Flux<Book> bookFlux = Flux.zip(titles, authors, heads)
+                .map(tuple -> new Book(tuple.getT1(), tuple.getT2(), tuple.getT3()));
+
+        bookFlux.subscribe(it -> log.info(String.valueOf(it)));
+    }
+
+    @Test
+    public void zipWithOperator() {
+        Flux<String> titles = Flux.just("Clean Code", "Programming on Java", "Learning Java");
+        Flux<Integer> heads = Flux.just(12, 24);
+
+        Flux<Book> bookFlux = titles.zipWith(heads)
+                .map(tuple -> new Book(tuple.getT1(), null, tuple.getT2()));
+
+        bookFlux.subscribe(it -> log.info(String.valueOf(it)));
     }
 }
