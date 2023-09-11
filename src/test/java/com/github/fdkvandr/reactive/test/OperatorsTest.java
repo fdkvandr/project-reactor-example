@@ -275,4 +275,22 @@ public class OperatorsTest {
 
         Thread.sleep(11000L);
     }
+
+    public Flux<String> findByName(String name) {
+        return name.equals("A")
+                ? Flux.just("nameA1", "nameA2").delayElements(Duration.ofMillis(300))
+                : Flux.just("nameB1", "nameB2").delayElements(Duration.ofMillis(100));
+    }
+
+    @Test
+    public void flatMapOperator() throws InterruptedException {
+        Flux<String> flux = Flux.just("a", "b").delayElements(Duration.ofMillis(100));
+
+        Flux<String> flatMapFlux = flux.map(String::toUpperCase)
+                .flatMapSequential(this::findByName).log();
+
+        flatMapFlux.subscribe(log::info);
+
+        Thread.sleep(1000L);
+    }
 }
